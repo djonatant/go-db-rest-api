@@ -61,33 +61,40 @@ func main() {
 
 	// Start server
 	addr := fmt.Sprintf(":%d", *port)
-	publicIP := getLocalIP()
+	ips := getLocalIPs()
 	
 	srv := &http.Server{
 		Addr:    addr,
 		Handler: r,
 	}
 
-	log.Printf("Server starting on http://%s%s", publicIP, addr)
-	log.Printf("Health check: http://%s%s/health", publicIP, addr)
+	log.Printf("Server starting on port %d", *port)
+	log.Println("Available at:")
+	for _, ip := range ips {
+		log.Printf("  - http://%s:%d", ip, *port)
+	}
+	log.Printf("Health check: http://localhost:%d/health", *port)
 
 	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		log.Fatalf("failed to start server: %v", err)
 	}
 }
 
-func getLocalIP() string {
+func getLocalIPs() []string {
+	var ips []string
 	addrs, err := net.InterfaceAddrs()
 	if err != nil {
-		return "localhost"
+		return []string{"localhost"}
 	}
 	for _, address := range addrs {
-		// check the address type and if it is not a loopback the display it
 		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
 			if ipnet.IP.To4() != nil {
-				return ipnet.IP.String()
+				ips = append(ips, ipnet.IP.String())
 			}
 		}
 	}
-	return "localhost"
+	if len(ips) == 0 {
+		return []string{"localhost"}
+	}
+	return ips
 }
