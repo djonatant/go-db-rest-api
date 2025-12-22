@@ -44,7 +44,15 @@ func main() {
 	}
 
 	// Initialize handlers
-	h := handlers.NewHandler(manager)
+	config := database.DBConfig{
+		Type:     database.DBType(*dbType),
+		Host:     *dbHost,
+		Port:     *dbPort,
+		User:     *dbUser,
+		Password: *dbPass,
+		DBName:   *dbName,
+	}
+	h := handlers.NewHandler(manager, config)
 
 	// Initialize Gin router
 	r := gin.Default()

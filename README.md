@@ -95,12 +95,6 @@ Stop-Process -Id <PID> -Force
 curl -X POST http://localhost:8080/query \
   -H "Content-Type: application/json" \
   -d '{
-    "type": "postgres",
-    "host": "localhost",
-    "port": 5432,
-    "user": "user",
-    "password": "password",
-    "dbname": "mydb",
     "query": "SELECT * FROM users WHERE id = 1"
   }'
 ```

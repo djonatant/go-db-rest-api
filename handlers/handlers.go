@@ -11,10 +11,14 @@ import (
 
 type Handler struct {
 	manager *database.ConnectionManager
+	config  database.DBConfig
 }
 
-func NewHandler(manager *database.ConnectionManager) *Handler {
-	return &Handler{manager: manager}
+func NewHandler(manager *database.ConnectionManager, config database.DBConfig) *Handler {
+	return &Handler{
+		manager: manager,
+		config:  config,
+	}
 }
 
 type ConnectRequest struct {
@@ -38,7 +42,6 @@ func (h *Handler) Connect(c *gin.Context) {
 }
 
 type QueryRequest struct {
-	database.DBConfig
 	Query string `json:"query" binding:"required"`
 }
 
@@ -49,7 +52,7 @@ func (h *Handler) Query(c *gin.Context) {
 		return
 	}
 
-	db, err := database.OpenConnection(req.DBConfig)
+	db, err := database.OpenConnection(h.config)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("failed to connect: %v", err)})
 		return
