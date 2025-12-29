@@ -41,16 +41,29 @@ func (h *Handler) Connect(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"connection_id": id, "message": "connected successfully"})
 }
 
-type QueryRequest struct {
-	Query string `json:"query" binding:"required"`
-}
-
 func (h *Handler) Query(c *gin.Context) {
-	var req QueryRequest
+	var req map[string]interface{}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	queryIntf, ok := req["query"]
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "query field is required"})
+		return
+	}
+	query, ok := queryIntf.(string)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "query must be a string"})
+		return
+	}
+
+	// Remove query from params map so it's not treated as a replacement param
+	delete(req, "query")
+
+	// Process the SQL based on params
+	finalQuery := ProcessSQL(query, req)
 
 	db, err := database.OpenConnection(h.config)
 	if err != nil {
@@ -59,7 +72,7 @@ func (h *Handler) Query(c *gin.Context) {
 	}
 	defer db.Close()
 
-	rows, err := db.Query(req.Query)
+	rows, err := db.Query(finalQuery)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("query failed: %v", err)})
 		return
