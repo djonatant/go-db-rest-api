@@ -89,3 +89,20 @@ The application accepts the following optional flags to configure a default data
   --db-password mysecret \
   --db-name psql_db
 ```
+
+---
+
+## 5. Development (Running from Source)
+
+If you have Go installed, you can run the application directly using the helper script:
+
+1.  **Make script executable** (one time):
+    ```bash
+    chmod +x run_local.sh
+    ```
+2.  **Run**:
+    ```bash
+    ./run_local.sh --port 8080
+    ```
+    This script automatically loads environment variables from `.env.local` before running.
+
